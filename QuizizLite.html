@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>📊 Quizizz-style Math Index Quiz</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    /* main quiz container */
+    .quiz-container {
+      max-width: 900px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(4px);
+      border-radius: 56px;
+      padding: 20px 24px 32px;
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    /* header with progress */
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      gap: 12px;
+    }
+
+    .title-badge {
+      background: #ffd966;
+      padding: 8px 18px;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #2d3e4b;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.05), 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .question-counter {
+      background: #2c4c6c;
+      padding: 8px 18px;
+      border-radius: 60px;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      backdrop-filter: blur(4px);
+    }
+
+    /* question card */
+    .question-card {
+      background: #ffffff;
+      border-radius: 48px;
+      padding: 32px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.3);
+      transition: 0.2s;
+    }
+
+    .question-text {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #1e2f3a;
+      line-height: 1.3;
+      margin-bottom: 32px;
+      border-left: 6px solid #f39c12;
+      padding-left: 20px;
+    }
+
+    /* options grid (quizizz style) */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .option-btn {
+      background: #f4f7fc;
+      border: 2px solid #e2e8f0;
+      border-radius: 60px;
+      padding: 14px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #1f2f3c;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: #eef3fc;
+      border-color: #bdd3ec;
+      transform: scale(0.98);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+    }
+
+    .option-letter {
+      background: #dce5f0;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 60px;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #2c4f6e;
+    }
+
+    /* correct / wrong feedback states */
+    .option-correct {
+      background: #c8f0d1;
+      border-color: #2e7d64;
+      color: #145c3e;
+    }
+    .option-correct .option-letter {
+      background: #2e7d64;
+      color: white;
+    }
+
+    .option-wrong {
+      background: #ffe0db;
+      border-color: #e25c5c;
+      color: #a13333;
+      text-decoration: line-through;
+    }
+    .option-wrong .option-letter {
+      background: #e25c5c;
+      color: white;
+    }
+
+    .disabled-opt {
+      cursor: default;
+      opacity: 0.9;
+    }
+
+    /* feedback + next area */
+    .feedback-area {
+      background: #f0f4fa;
+      border-radius: 32px;
+      padding: 16px 24px;
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .feedback-message {
+      font-weight: 500;
+      font-size: 1rem;
+      background: white;
+      padding: 10px 18px;
+      border-radius: 40px;
+      flex: 1;
+      color: #1f3b4a;
+      box-shadow: inset 0 1px 3px #0001, 0 1px 2px white;
+    }
+
+    .next-btn {
+      background: #2c7da0;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 6px 0 #1f5068;
+      transform: translateY(-2px);
+    }
+
+    .next-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #1f5068;
+    }
+
+    .next-btn:disabled {
+      background: #98b6c9;
+      transform: translateY(0);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* result screen */
+    .result-screen {
+      background: white;
+      border-radius: 48px;
+      padding: 36px 28px;
+      text-align: center;
+    }
+
+    .score-circle {
+      background: #1e4663;
+      width: 140px;
+      height: 140px;
+      margin: 20px auto;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.2rem;
+      font-weight: 800;
+      color: #ffdd88;
+      box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+    }
+
+    .restart-btn {
+      background: #f4b942;
+      border: none;
+      padding: 14px 36px;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-top: 28px;
+      cursor: pointer;
+      transition: 0.1s linear;
+      color: #2d3e2b;
+    }
+
+    hr {
+      margin: 12px 0;
+    }
+
+    @media (max-width: 650px) {
+      .quiz-container {
+        padding: 16px;
+      }
+      .question-text {
+        font-size: 1.3rem;
+      }
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quizRoot">
+  <!-- dynamic rendering -->
+</div>
+
+<script>
+  // ----------------------------------------------
+  // QUIZ DATA based on REAL questions & answers from PDF
+  // ----------------------------------------------
+  const QUESTIONS = [
+    {
+      id: 1,
+      text: "📈 Price index of a product in 1998 is 120 (base 1994) and 130 (base 1991). If price in 1994 = RM 650, what is the price in 1991?",
+      correct: 600,
+      options: [
+        { value: 540, text: "RM 540" },
+        { value: 600, text: "RM 600" },
+        { value: 650, text: "RM 650" },
+        { value: 780, text: "RM 780" }
+      ],
+      explanation: "I₉₈,₉₄ = 120 ⇒ Q₉₈ = (120/100)*650 = RM780. Then I₉₈,₉₁ =130 ⇒ 130 = (780/Q₉₁)*100 ⇒ Q₉₁ = RM600."
+    },
+    {
+      id: 2,
+      text: "🧥 The table: Shirt (I=120, w=m), Trousers (105, w=8), Bag (140, w=4), Shoes (150, w=6). Composite index 1997 based 1992 = 127. Find value of m.",
+      correct: 2,
+      options: [
+        { value: 1, text: "m = 1" },
+        { value: 2, text: "m = 2" },
+        { value: 3, text: "m = 3" },
+        { value: 4, text: "m = 4" }
+      ],
+      explanation: "Composite index formula: (120m + 105·8 + 140·4 + 150·6)/(m+18)=127 → (120m+2300)=127(m+18) → 120m+2300=127m+2286 → 7m=14 → m=2."
+    },
+    {
+      id: 3,
+      text: "👟 Using the same table: Price index of Shoes in 1997 based on 1992 is 150. If the price of shoes in 1992 = RM 60, what is the price of shoes in 1997?",
+      correct: 90,
+      options: [
+        { value: 60, text: "RM 60" },
+        { value: 75, text: "RM 75" },
+        { value: 90, text: "RM 90" },
+        { value: 100, text: "RM 100" }
+      ],
+      explanation: "I = (Q₉₇ / Q₉₂)*100 → 150 = (Q₉₇ / 60)*100 → Q₉₇ = (150×60)/100 = RM 90."
+    }
+  ];
+
+  // ----------------------------------------------
+  // APP STATE
+  let currentIndex = 0;            // 0-based
+  let userAnswers = [];            // store { selectedValue, isCorrect, selectedText }
+  let quizCompleted = false;
+
+  // helpers
+  function isQuestionAnswered(idx) {
+    return userAnswers[idx] !== undefined;
+  }
+
+  function computeScore() {
+    let correctCount = 0;
+    for (let ans of userAnswers) {
+      if (ans && ans.isCorrect === true) correctCount++;
+    }
+    return correctCount;
+  }
+
+  // render current question or result
+  function render() {
+    const root = document.getElementById("quizRoot");
+    if (!root) return;
+
+    if (quizCompleted) {
+      const total = QUESTIONS.length;
+      const score = computeScore();
+      const percent = Math.round((score / total) * 100);
+      root.innerHTML = `
+        <div class="result-screen">
+          <div class="title-badge" style="display:inline-block; margin-bottom:12px;">🏆 QUIZ COMPLETE 🏆</div>
+          <div class="score-circle">
+            ${score} / ${total}
+          </div>
+          <h2 style="color:#1e4663;">Your Score: ${percent}%</h2>
+          <p style="margin: 16px 0; font-size:1.1rem;">Great effort! Review answers below or restart.</p>
+          <button class="restart-btn" id="restartQuizBtn">⟳ Play Again</button>
+          <div style="margin-top: 28px; text-align:left; background:#eef2f7; border-radius:36px; padding:16px;">
+            <h3 style="margin-bottom:14px;">📋 Summary & Explanations</h3>
+            ${QUESTIONS.map((q, idx) => {
+              const userAns = userAnswers[idx];
+              const isAnsCorrect = userAns?.isCorrect;
+              const correctValue = q.correct;
+              const correctTextLabel = q.options.find(opt => opt.value === correctValue)?.text || correctValue;
+              return `
+                <div style="background:white; border-radius:28px; padding:16px; margin-bottom:14px; border-left: 6px solid ${isAnsCorrect ? '#2e7d64' : '#e25c5c'}">
+                  <div><strong>Q${idx+1}:</strong> ${q.text}</div>
+                  <div style="margin-top:8px;">✨ Your answer: ${userAns?.selectedText || 'Not answered'} 
+                    ${isAnsCorrect ? '✅' : '❌'}
+                  </div>
+                  <div style="color:#1f6e43; font-size:0.9rem;">✔️ Correct answer: ${correctTextLabel}</div>
+                  <div style="background:#f8f9fc; padding:10px; border-radius:20px; margin-top:10px; font-size:0.9rem;">📖 ${q.explanation}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+      const restartBtn = document.getElementById("restartQuizBtn");
+      if (restartBtn) {
+        restartBtn.addEventListener("click", () => {
+          resetQuiz();
+          render();
+        });
+      }
+      return;
+    }
+
+    // --- ACTIVE QUESTION VIEW ---
+    const question = QUESTIONS[currentIndex];
+    const answered = isQuestionAnswered(currentIndex);
+    const currentUserSelection = answered ? userAnswers[currentIndex] : null;
+    const selectedValue = currentUserSelection ? currentUserSelection.selectedValue : null;
+    const isCurrCorrect = currentUserSelection ? currentUserSelection.isCorrect : false;
+
+    // generate options html
+    const optionsHtml = question.options.map((opt, optIdx) => {
+      const letter = String.fromCharCode(65 + optIdx); // A, B, C, D
+      let additionalClass = "";
+      let disabledAttr = answered ? "disabled" : "";
+      let isSelectedWrong = false;
+      let isSelectedCorrectHighlight = false;
+
+      if (answered) {
+        if (selectedValue === opt.value) {
+          // this is the option that user clicked
+          if (isCurrCorrect) {
+            additionalClass = "option-correct";
+          } else {
+            additionalClass = "option-wrong";
+          }
+        }
+        // also if the correct answer is not the selected but we want to show correct one (optional)
+        // For better UX, we can also lightly indicate correct option? (quizizz style often shows correct after)
+        // But to avoid confusion, we just mark wrong selection and keep correct unmarked but not green.
+        // However it's nicer to show which is correct after answer: we will show via feedback & border on correct one if wrong answer
+        // Let's extra highlight the actual correct option in a subtle way.
+      }
+
+      // extra: if answered and not correct, show faint correct answer hint outline (soft)
+      let extraCorrectStyle = "";
+      if (answered && !isCurrCorrect && opt.value === question.correct) {
+        extraCorrectStyle = "border: 2px solid #2ecc71; background:#e6f7ec; box-shadow: 0 0 0 1px #2ecc71;";
+      }
+
+      return `
+        <button class="option-btn ${additionalClass} ${answered ? 'disabled-opt' : ''}" 
+          data-value="${opt.value}" style="${extraCorrectStyle}" ${answered ? 'disabled' : ''}>
+          <span class="option-letter">${letter}</span>
+          <span>${opt.text}</span>
+        </button>
+      `;
+    }).join('');
+
+    const progressText = `Question ${currentIndex+1} of ${QUESTIONS.length}`;
+
+    const feedbackMsg = answered ? (isCurrCorrect ? "✅ Correct! Great job." : `❌ Oops! The correct answer is ${question.options.find(o => o.value === question.correct)?.text}. ${question.explanation}`) 
+                                : "Select an option to continue ➡️";
+
+    root.innerHTML = `
+      <div class="quiz-header">
+        <div class="title-badge">📊 Price Index Challenge</div>
+        <div class="question-counter">📌 ${progressText}</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">${question.text}</div>
+        <div class="options-grid" id="optionsGrid">
+          ${optionsHtml}
+        </div>
+        <div class="feedback-area">
+          <div class="feedback-message">💡 ${feedbackMsg}</div>
+          <button class="next-btn" id="nextButton" ${!answered ? 'disabled' : ''}>
+            ${currentIndex === QUESTIONS.length-1 ? '🏁 Finish Quiz' : 'Next →'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    // attach option listeners
+    if (!answered) {
+      const optionBtns = document.querySelectorAll('.option-btn');
+      optionBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          if (answered) return;
+          const selectedVal = parseFloat(btn.getAttribute('data-value'));
+          const isCorrect = (selectedVal === question.correct);
+          const selectedText = question.options.find(opt => opt.value === selectedVal)?.text || "";
+          // store answer
+          userAnswers[currentIndex] = {
+            selectedValue: selectedVal,
+            isCorrect: isCorrect,
+            selectedText: selectedText
+          };
+          // re-render to show feedback & disable further clicks
+          render();
+        });
+      });
+    }
+
+    // next button functionality
+    const nextBtn = document.getElementById('nextButton');
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (!isQuestionAnswered(currentIndex)) return;
+        if (currentIndex + 1 < QUESTIONS.length) {
+          currentIndex++;
+          render();
+        } else {
+          // quiz completed
+          quizCompleted = true;
+          render();
+        }
+      });
+    }
+  }
+
+  function resetQuiz() {
+    currentIndex = 0;
+    userAnswers = [];
+    quizCompleted = false;
+  }
+
+  // initial render
+  render();
+</script>
+</body>
+</html>
